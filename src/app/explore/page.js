@@ -210,15 +210,15 @@ export default function ExplorePage() {
             {reports.map((report) => (
               <Link key={report._id} href={`/report/${report._id}`}>
                 <Card className="transition-shadow hover:shadow-md">
-                  <CardContent className="p-5 flex gap-6">
+                  <CardContent className="p-4 flex gap-4">
                     <img
                       src={report.thumbnail}
                       alt={report.title}
                       className="w-24 h-24 rounded-lg border object-cover flex-shrink-0"
                     />
-                    <div className="flex flex-col justify-between gap-2 flex-1">
+                    <div className="flex-1 space-y-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-base font-semibold text-foreground">
+                        <h3 className="text-lg font-semibold text-foreground">
                           {report.title}
                         </h3>
                         <Badge
@@ -229,9 +229,32 @@ export default function ExplorePage() {
                           {report.status}
                         </Badge>
                       </div>
+
+                      {/* Location Row */}
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 text-muted-foreground"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 11c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm0 0c4.418 0 8-1.79 8-4s-3.582-4-8-4-8 1.79-8 4 3.582 4 8 4z"
+                          />
+                        </svg>
+                        <span>{report.city || "Unknown Location"}</span>
+                      </div>
+
+                      {/* Description */}
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {report.description || "No description provided."}
                       </p>
+
+                      {/* Date and Author */}
                       <p className="text-xs text-muted-foreground">
                         {new Date(report.createdAt).toLocaleString()} by{" "}
                         <span className="font-medium text-primary">
