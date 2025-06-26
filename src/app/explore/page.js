@@ -72,7 +72,7 @@ export default function ExplorePage() {
             },
             geometry: {
               type: "Point",
-              coordinates: [r.location.lng, r.location.lat],
+              coordinates: r.location.coordinates,
             },
           }));
 

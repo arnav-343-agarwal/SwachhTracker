@@ -37,6 +37,7 @@ export async function GET(request, context) {
       description: report.description,
       category: report.category,
       location: report.location,
+      rawLocation: report.rawLocation,
       imageUrl: report.imageUrl,
       images: report.images || [],
       resolved: report.resolved,
