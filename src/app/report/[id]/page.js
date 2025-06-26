@@ -390,12 +390,12 @@ export default function ReportDetailPage() {
         </div>
       </div>
       {/* DEBUG: Show user and owner IDs for troubleshooting */}
-      <div className="mb-4 p-2 bg-yellow-50 border border-yellow-300 rounded text-xs text-yellow-900">
+      {/* <div className="mb-4 p-2 bg-yellow-50 border border-yellow-300 rounded text-xs text-yellow-900">
         <div><b>Debug Info:</b></div>
         <div>user._id: {user?._id || 'null'}</div>
         <div>report.createdBy._id: {report?.createdBy?._id || 'null'}</div>
         <div>isOwner: {String(isOwner)}</div>
-      </div>
+      </div> */}
     </div>
   );
 } 

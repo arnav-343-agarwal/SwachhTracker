@@ -3,6 +3,16 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -12,7 +22,6 @@ export default function Navbar() {
 
   useEffect(() => {
     async function fetchUser() {
-      setLoading(true);
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
@@ -39,71 +48,103 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-green-600 shadow-lg">
+    <nav className="bg-green-600 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            {/* Logo/Brand */}
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <span className="text-white font-bold text-xl">SwachhMap</span>
-            </Link>
-          </div>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-green-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <span className="text-white font-bold text-xl">SwachhMap</span>
+          </Link>
 
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-8">
-            <Link 
-              href="/" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/') 
-                  ? 'bg-green-700 text-white' 
-                  : 'text-green-100 hover:bg-green-700 hover:text-white'
+          {/* Nav Links */}
+          <div className="flex items-center gap-6">
+            <Link
+              href="/"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/')
+                  ? 'text-white underline underline-offset-4'
+                  : 'text-green-100 hover:text-white'
               }`}
             >
               Home
             </Link>
-            
-            <Link 
-              href="/report" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/report') 
-                  ? 'bg-green-700 text-white' 
-                  : 'text-green-100 hover:bg-green-700 hover:text-white'
+            <Link
+              href="/report"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/report')
+                  ? 'text-white underline underline-offset-4'
+                  : 'text-green-100 hover:text-white'
               }`}
             >
-              Report an Issue
+              Report
             </Link>
-            
-            <Link 
-              href="/explore" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/explore') 
-                  ? 'bg-green-700 text-white' 
-                  : 'text-green-100 hover:bg-green-700 hover:text-white'
+            <Link
+              href="/explore"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/explore')
+                  ? 'text-white underline underline-offset-4'
+                  : 'text-green-100 hover:text-white'
               }`}
             >
-              Explore Reports
+              Explore
             </Link>
 
-            {/* Auth links */}
-            {loading ? null : user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-green-100 text-sm">Hi, <span className="font-semibold">{user.username}</span>{user.isAdmin && <span className="ml-1 px-2 py-0.5 bg-green-800 text-xs rounded text-white">admin</span>}</span>
-                <button onClick={handleLogout} className="px-3 py-2 bg-white text-green-600 rounded-md text-sm font-medium hover:bg-green-50 transition-colors">Logout</button>
-              </div>
-            ) : (
-              <>
-                <Link href="/login" className="px-3 py-2 bg-white text-green-600 rounded-md text-sm font-medium hover:bg-green-50 transition-colors">Login</Link>
-                <Link href="/register" className="px-3 py-2 bg-white text-green-600 rounded-md text-sm font-medium hover:bg-green-50 transition-colors">Register</Link>
-              </>
-            )}
+            {/* Auth Section */}
+            {!loading &&
+              (user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="cursor-pointer border border-white">
+                      <AvatarImage
+                        src="/user-avatar.png"
+                        alt="user"
+                      />
+                      <AvatarFallback>
+                        {user.username?.[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                      Hello, {user.username}
+                    </DropdownMenuLabel>
+                    {user.isAdmin && (
+                      <DropdownMenuItem disabled>
+                        Admin Access
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className="flex gap-2">
+                  <Button asChild variant="outline" className="bg-white text-green-600 hover:bg-green-50">
+                    <Link href="/login">Login</Link>
+                  </Button>
+                  <Button asChild className="bg-white text-green-600 hover:bg-green-50">
+                    <Link href="/register">Register</Link>
+                  </Button>
+                </div>
+              ))}
           </div>
         </div>
       </div>
     </nav>
   );
-} 
+}
