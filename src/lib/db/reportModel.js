@@ -1,4 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+delete mongoose.models.Report; // force refresh
+
 
 const reportSchema = new mongoose.Schema({
   title: {
@@ -6,87 +8,105 @@ const reportSchema = new mongoose.Schema({
     required: true,
     trim: true,
     minlength: 1,
-    maxlength: 100
+    maxlength: 100,
   },
   description: {
     type: String,
     required: true,
     trim: true,
     minlength: 3,
-    maxlength: 1000
+    maxlength: 1000,
   },
   category: {
     type: String,
     required: true,
-    enum: ['garbage', 'waterlogging', 'other']
+    enum: ["garbage", "waterlogging", "other"],
+  },
+  rawLocation: {
+    type: String,
+    required: true,
+    maxlength: 300,
   },
   location: {
-    lat: {
-      type: Number,
+    type: {
+      type: String,
+      enum: ["Point"],
       required: true,
-      min: -90,
-      max: 90
     },
-    lng: {
-      type: Number,
+    coordinates: {
+      type: [Number],
       required: true,
-      min: -180,
-      max: 180
-    }
+      validate: {
+        validator: function (value) {
+          return (
+            value.length === 2 &&
+            value[0] >= -180 &&
+            value[0] <= 180 &&
+            value[1] >= -90 &&
+            value[1] <= 90
+          );
+        },
+        message: "Coordinates must be [lng, lat] and valid",
+      },
+    },
   },
   imageUrl: {
     type: String,
-    required: true
+    required: true,
   },
-  images: [{
-    url: {
-      type: String,
-      required: true
+  images: [
+    {
+      url: {
+        type: String,
+        required: true,
+      },
+      publicId: {
+        type: String,
+        required: true,
+      },
     },
-    publicId: {
-      type: String,
-      required: true
-    }
-  }],
-  reviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Review',
-    default: []
-  }],
+  ],
+  reviews: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+      default: [],
+    },
+  ],
   upvotes: {
     type: Number,
-    default: 0
+    default: 0,
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   resolved: {
     type: Boolean,
-    default: false
+    default: false,
   },
   resolvedAt: {
     type: Date,
-    default: null
+    default: null,
   },
   resolvedBy: {
     type: String,
-    default: null
+    default: null,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  }
+    ref: "User",
+    required: true,
+  },
 });
 
 // Indexes for faster queries
-reportSchema.index({ location: '2dsphere' });
+reportSchema.index({ location: "2dsphere" });
 reportSchema.index({ category: 1 });
 reportSchema.index({ createdAt: -1 });
 reportSchema.index({ resolved: 1 });
 reportSchema.index({ createdBy: 1 });
 
-const Report = mongoose.models.Report || mongoose.model('Report', reportSchema);
+const Report = mongoose.models.Report || mongoose.model("Report", reportSchema);
 
-export default Report; 
+export default Report;

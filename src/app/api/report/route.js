@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { connectToDatabase, createReport, getAllReports } from '@/lib/db';
-import { uploadImage, deleteImage } from '@/lib/cloudinary';
-import { geocodeAddress } from '@/lib/geocode';
-import { getUserFromRequest } from '@/lib/auth/jwt';
+import { NextResponse } from "next/server";
+import { connectToDatabase, createReport, getAllReports } from "@/lib/db";
+import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { geocodeAddress } from "@/lib/geocode";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * POST /api/report
@@ -16,27 +16,43 @@ export async function POST(request) {
     // Get authenticated user
     const user = getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
     }
     const userId = user._id;
 
     // Parse request body
     const body = await request.json();
+    console.log(body);
     const { title, description, category, location, address, newImages } = body;
 
     // Validate required fields
-    if (!title || !description || !category || !newImages || (!location && !address)) {
+    if (
+      !title ||
+      !description ||
+      !category ||
+      !newImages ||
+      (!location && !address)
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, description, category, images, and location/address' },
+        {
+          error:
+            "Missing required fields: title, description, category, images, and location/address",
+        },
         { status: 400 }
       );
     }
 
     // Validate category
-    const validCategories = ['garbage', 'waterlogging', 'other'];
+    const validCategories = ["garbage", "waterlogging", "other"];
     if (!validCategories.includes(category)) {
       return NextResponse.json(
-        { error: 'Invalid category. Must be one of: garbage, waterlogging, other' },
+        {
+          error:
+            "Invalid category. Must be one of: garbage, waterlogging, other",
+        },
         { status: 400 }
       );
     }
@@ -48,6 +64,7 @@ export async function POST(request) {
       try {
         const coords = await geocodeAddress(address);
         finalLocation = coords;
+        // console.log(finalLocation)
       } catch (error) {
         return NextResponse.json(
           { error: `Failed to geocode address: ${error.message}` },
@@ -58,13 +75,13 @@ export async function POST(request) {
 
     // Upload images to Cloudinary
     const uploadedImages = [];
-    
+
     for (const image of newImages) {
       try {
         const uploadResult = await uploadImage(image);
         uploadedImages.push({
           url: uploadResult.secure_url,
-          publicId: uploadResult.public_id
+          publicId: uploadResult.public_id,
         });
       } catch (error) {
         // If image upload fails, clean up any previously uploaded images
@@ -72,10 +89,10 @@ export async function POST(request) {
           try {
             await deleteImage(uploadedImage.publicId);
           } catch (cleanupError) {
-            console.error('Failed to cleanup image:', cleanupError);
+            console.error("Failed to cleanup image:", cleanupError);
           }
         }
-        
+
         return NextResponse.json(
           { error: `Failed to upload image: ${error.message}` },
           { status: 500 }
@@ -88,31 +105,37 @@ export async function POST(request) {
       title: title.trim(),
       description: description.trim(),
       category,
-      location: finalLocation,
-      imageUrl: uploadedImages[0]?.url || '', // Use first image as main image
-      images: uploadedImages, // Store all images with their public IDs
-      createdBy: userId
+      location: {
+        type: "Point",
+        coordinates: [finalLocation.lng, finalLocation.lat],
+      },
+      rawLocation: address,
+      imageUrl: uploadedImages[0]?.url || "",
+      images: uploadedImages,
+      createdBy: userId,
     };
 
     // Save report to database
     const savedReport = await createReport(reportData);
 
-    return NextResponse.json({
-      success: true,
-      report: {
-        _id: savedReport._id,
-        title: savedReport.title,
-        category: savedReport.category,
-        location: savedReport.location,
-        imageUrl: savedReport.imageUrl,
-        createdAt: savedReport.createdAt
-      }
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('Error creating report:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        success: true,
+        report: {
+          _id: savedReport._id,
+          title: savedReport.title,
+          category: savedReport.category,
+          location: savedReport.location,
+          imageUrl: savedReport.imageUrl,
+          createdAt: savedReport.createdAt,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating report:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -129,15 +152,15 @@ export async function GET(request) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 20;
-    const category = searchParams.get('category');
-    const resolved = searchParams.get('resolved');
+    const page = parseInt(searchParams.get("page")) || 1;
+    const limit = parseInt(searchParams.get("limit")) || 20;
+    const category = searchParams.get("category");
+    const resolved = searchParams.get("resolved");
 
     // Validate parameters
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
-        { error: 'Invalid pagination parameters' },
+        { error: "Invalid pagination parameters" },
         { status: 400 }
       );
     }
@@ -145,35 +168,34 @@ export async function GET(request) {
     // Build options object
     const options = { page, limit };
     if (category) options.category = category;
-    if (resolved !== null) options.resolved = resolved === 'true';
+    if (resolved !== null) options.resolved = resolved === "true";
 
     // Get reports
     const result = await getAllReports(options);
     // console.log(result)
     // Format response
-    const formattedReports = result.reports.map(report => ({
+    const formattedReports = result.reports.map((report) => ({
       _id: report._id,
       title: report.title,
       description: report.description,
       category: report.category,
       location: report.location,
       thumbnail: report.imageUrl,
-      status: report.resolved ? 'resolved' : 'pending',
+      status: report.resolved ? "resolved" : "pending",
       createdAt: report.createdAt,
-      createdBy: report.createdBy?.username || 'Unknown'
+      createdBy: report.createdBy?.username || "Unknown",
     }));
 
     return NextResponse.json({
       success: true,
       reports: formattedReports,
-      pagination: result.pagination
+      pagination: result.pagination,
     });
-
   } catch (error) {
-    console.error('Error fetching reports:', error);
+    console.error("Error fetching reports:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
-} 
+}
