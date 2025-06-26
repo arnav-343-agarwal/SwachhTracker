@@ -180,6 +180,7 @@ export async function GET(request) {
       description: report.description,
       category: report.category,
       location: report.location,
+      rawLocation: report.rawLocation,
       thumbnail: report.imageUrl,
       status: report.resolved ? "resolved" : "pending",
       createdAt: report.createdAt,

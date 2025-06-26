@@ -30,7 +30,7 @@ export default function ExplorePage() {
       try {
         const res = await fetch("/api/report?limit=100");
         const data = await res.json();
-        console.log(data.reports[0]);
+        console.log(data.reports);
         setReports(data.reports || []);
       } catch {
         setError("Failed to load reports.");
@@ -246,7 +246,7 @@ export default function ExplorePage() {
                             d="M12 11c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm0 0c4.418 0 8-1.79 8-4s-3.582-4-8-4-8 1.79-8 4 3.582 4 8 4z"
                           />
                         </svg>
-                        <span>{report.city || "Unknown Location"}</span>
+                        <span>{report.rawLocation || "Unknown Location"}</span>
                       </div>
 
                       {/* Description */}
