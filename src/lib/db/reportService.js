@@ -46,7 +46,7 @@ export async function getAllReports(options = {}) {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('title category location imageUrl resolved createdAt _id')
+      .select('title description category location imageUrl resolved createdAt _id')
       .exec();
 
     // Get total count for pagination

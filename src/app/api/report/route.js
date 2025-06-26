@@ -149,11 +149,12 @@ export async function GET(request) {
 
     // Get reports
     const result = await getAllReports(options);
-    console.log(result)
+    // console.log(result)
     // Format response
     const formattedReports = result.reports.map(report => ({
       _id: report._id,
       title: report.title,
+      description: report.description,
       category: report.category,
       location: report.location,
       thumbnail: report.imageUrl,
